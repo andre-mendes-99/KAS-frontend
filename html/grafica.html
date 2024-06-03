@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="/css/style.css">
+	<link rel="icon" type="image/png" href="Kas_logo_icon.png">
+	<script src="http://code.jquery.com/jquery-3.6.0.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+	<title>grafica_kas</title>
+</head>
+
+<body>
+	<section>
+		<ul>
+			<li id="statsdeStats"><a href="estatistica.html">Mapas</a></li>
+			<li id="statsDeStocks"><a href="stocks.html">Stocks</a></li>
+			<li id="statsdeGraphs"><a href="grafica.html">Gráficos</a></li>
+			<li class="dropdown">
+				<a id="login" href="perfil.html" class="dropbtn">Perfil</a>
+				<div class="dropdown-content">
+					<a id="exit">Logout</a>
+				</div>
+			</li>
+		</ul>
+	</section>
+	<center>
+		<h1>Gráficos</h1>
+	</center>
+	<br>
+	<br>
+	<center>
+		<div class="graficos">
+			<canvas id="myChart" style="width:100%;max-width:600px"></canvas>
+		</div>
+	</center>
+	<br>
+	<center>
+		<div>
+			<button class="submitBtns" id="barChartButton">Gráfico de Barras</button>
+			<button class="submitBtns" id="pieChartButton">Gráfico de Pizza</button>
+			<button class="submitBtns" id="horizontalBarChartButton">Gráfico de Barra Horizontal</button>
+			<button class="submitBtns" id="export">Exportar <i class="fa fa-folder"></i></button>
+		</div>
+	</center>
+
+	<center>
+		<p class="estatistica" id="produtobarato"></p>
+		<p class="estatistica" id="produtocaro"></p>
+		<p class="estatistica" id="media"></p>
+	</center>
+
+</body>
+<script src="/javascript/scripts_allpages.js"></script>
+<script src="/javascript/cookies.js"></script>
+<script>
+	$(document).ready(function () {
+		let cheapestProduct = null;
+        let costliestProduct = null;
+        let averagePrice = null;
+
+		 $.get("http://localhost:3000/products/chepeastprod", function (data) {
+            if (data.data.length > 0) {
+                cheapestProduct = data.data[0];
+                $('#produtobarato').text("Produto Mais Barato: " + cheapestProduct.product_name + " - Preço: " + cheapestProduct.product_price + "€");
+            } else {
+                $('#produtobarato').text("Produto Mais Barato: Nenhum produto encontrado.");
+            }
+        });
+
+        // Chamada AJAX para obter o produto mais caro
+        $.get("http://localhost:3000/products/costliestprod", function (data) {
+            if (data.data.length > 0) {
+                costliestProduct = data.data[0];
+                $('#produtocaro').text("Produto Mais Caro: " + costliestProduct.product_name + " - Preço: " + costliestProduct.product_price + "€");
+            } else {
+                $('#produtocaro').text("Produto Mais Caro: Nenhum produto encontrado.");
+            }
+        });
+
+		// Chamada AJAX para obter todos os produtos e calcular a média de preços
+		$.get("http://localhost:3000/products", function (data) {
+			let totalPrices = 0;
+			let productNames = [];
+			let productStocks = [];
+			
+
+			data.data.forEach(function (product, index) {
+				totalPrices += parseFloat(product.product_price);
+				productNames.push(product.product_name);
+				productStocks.push(product.product_quantity);
+
+				
+				$('#productSelect').append(new Option(product.product_name, product.product_id));
+
+			});
+
+			 averagePrice = totalPrices / data.data.length;
+			$('#media').text("Média de Preços: " + averagePrice.toFixed(2) + "€");
+		});
+
+
+
+
+		var currentChartType = 'bar';
+		updateChart(currentChartType);
+
+		$('#barChartButton').click(function () {
+			currentChartType = 'bar';
+			updateChart(currentChartType);
+		});
+
+		$('#pieChartButton').click(function () {
+			currentChartType = 'pie';
+			updateChart(currentChartType);
+		});
+
+		$('#horizontalBarChartButton').click(function () {
+			currentChartType = 'horizontalBar';
+			updateChart(currentChartType);
+		});
+
+		function updateChart(chartType) {
+			// Limpar o gráfico existente
+			$('#myChart').remove();
+			$('.graficos').append('<canvas id="myChart" style="width:100%;max-width:600px"></canvas>');
+
+			$.ajax({
+				url: 'http://localhost:3000/sales/getProductSales',
+				type: 'GET',
+				dataType: 'json',
+				success: function (response) {
+					const data = response;
+					const productNames = data.map(item => item.product_name);
+					const totalSales = data.map(item => item.total_sales);
+					const colors = generateColors(productNames.length);
+
+					if (chartType === 'bar') {
+						plotBarChart(productNames, totalSales, colors);
+					} else if (chartType === 'pie') {
+						plotPieChart(productNames, totalSales, colors);
+					} else if (chartType === 'horizontalBar') {
+						plotHorizontalBarChart(productNames, totalSales, colors);
+					}
+				},
+				error: function (xhr, status, error) {
+					console.error('Erro ao obter dados dos produtos:', error);
+				}
+			});
+		}
+
+		// Função para gerar cores aleatórias
+		function generateColors(numColors) {
+			const colors = [];
+			for (let i = 0; i < numColors; i++) {
+				const color = '#' + Math.floor(Math.random() * 16777215).toString(16);
+				colors.push(color);
+			}
+			return colors;
+		}
+
+		// Função para plotar gráfico de barras
+		function plotBarChart(labels, data, colors) {
+			var ctx = document.getElementById('myChart').getContext('2d');
+			var myChart = new Chart(ctx, {
+				type: 'bar',
+				data: {
+					labels: labels,
+					datasets: [{
+						label: 'Total de Vendas do Produto',
+						data: data,
+						backgroundColor: colors,
+						borderColor: 'rgba(54, 162, 235, 1)',
+						borderWidth: 1
+					}]
+				},
+				options: {
+					scales: {
+						y: {
+							beginAtZero: true
+						}
+					}
+				}
+			});
+		}
+
+		// Função para plotar gráfico de pizza
+		function plotPieChart(labels, data, colors) {
+			var ctx = document.getElementById('myChart').getContext('2d');
+			var myChart = new Chart(ctx, {
+				type: 'pie',
+				data: {
+					labels: labels,
+					datasets: [{
+						label: 'Total de Vendas do Produto',
+						data: data,
+						backgroundColor: colors,
+						borderColor: 'rgba(255, 99, 132, 1)',
+						borderWidth: 1
+					}]
+				},
+				options: {
+					scales: {
+						y: {
+							beginAtZero: true
+						}
+					}
+				}
+			});
+		}
+
+		// Função para plotar gráfico de barra horizontal
+		function plotHorizontalBarChart(labels, data, colors) {
+			var ctx = document.getElementById('myChart').getContext('2d');
+			var myChart = new Chart(ctx, {
+				type: 'horizontalBar',
+				data: {
+					labels: labels,
+					datasets: [{
+						label: 'Total de Vendas do Produto',
+						data: data,
+						backgroundColor: colors,
+						borderColor: 'rgba(75, 192, 192, 1)',
+						borderWidth: 1
+					}]
+				},
+				options: {
+					scales: {
+						x: {
+							beginAtZero: true
+						}
+					}
+				}
+			});
+		}
+		$('#export').click(function () {
+            $.ajax({
+                url: 'http://localhost:3000/sales/getProductSales',
+                type: 'GET',
+                dataType: 'json',
+                success: function (response) {
+                    const data = response;
+
+                    // Extrair os dados necessários para a exportação
+                    const worksheetData = data.map(item => [item.product_name, item.total_sales]);
+                    worksheetData.unshift(['Produto', 'Vendas']); // Adicionar cabeçalho
+
+                    // Adicionar produto mais barato, mais caro e média dos preços
+                    worksheetData.push([]);
+                    worksheetData.push(['Produto Mais Barato', cheapestProduct ? cheapestProduct.product_name + " - " + cheapestProduct.product_price + "€" : 'Nenhum produto encontrado']);
+                    worksheetData.push(['Produto Mais Caro', costliestProduct ? costliestProduct.product_name + " - " + costliestProduct.product_price + "€" : 'Nenhum produto encontrado']);
+                    worksheetData.push(['Média de Preços', averagePrice ? averagePrice.toFixed(2) + "€" : 'N/A']);
+
+                    // Criar a planilha
+                    var worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+
+                    // Criar um novo livro de Excel e adicionar a planilha
+                    var workbook = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(workbook, worksheet, 'Vendas');
+
+                    // Salvar o arquivo Excel
+                    XLSX.writeFile(workbook, 'vendas.xlsx');
+                },
+                error: function (xhr, status, error) {
+                    console.error('Erro ao obter dados dos produtos:', error);
+                }
+            });
+        });
+
+	});
+</script>
+
+</html>

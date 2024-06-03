@@ -1,0 +1,191 @@
+body {
+  background-color: #367B92;
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.logo {
+  border-radius: 70px;
+  width: 40%;
+  height: 40%;
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #EB7131;
+}
+
+li {
+  float: left;
+}
+
+li a {
+  display: block;
+  color: #ffffff;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+/* Change the link color to #111 (black) on hover */
+li a:hover {
+  background-color: #111;
+  transition-duration: 1s;
+
+}
+
+li a,
+.dropbtn {
+  display: inline-block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  width: fit-content;
+
+}
+
+li a:hover,
+.dropdown:hover .dropbtn {
+  background-color: #111;
+  width: fit-content;
+
+}
+
+li.dropdown {
+  width: fit-content;
+
+  float: right;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  width: fit-content;
+  background-color: #EB7131;
+  min-width: fit-content;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.dropdown-content a {
+  color: white;
+  width: fit-content;
+  padding: 10px 9px;
+  text-decoration: none;
+  display: block;
+  text-align: left;
+}
+
+
+.dropdown-content a:hover {
+  width: fit-content;
+
+  background-color: black;
+}
+
+.dropdown:hover .dropdown-content {
+  width: fit-content;
+  display: block;
+}
+
+
+.graficos {
+  background-color: white;
+  width: fit-content;
+  height: fit-content;
+}
+
+.menucontainer {
+  margin-top: 17px;
+}
+
+#map {
+  margin: 10%;
+  height: 300px;
+  width: 500px;
+}
+
+.perfilContainer {
+  color: #FFFFFF;
+  font-weight: 400;
+  background-color: #EB7131;
+  margin: 2%;
+  border-radius: 10px;
+  height: 500px;
+}
+
+.profilepiccontainer {
+  margin-top: 2%;
+  margin-left: 2%;
+  width: 30%;
+  height: 80%;
+}
+
+.infoUser {
+  border-radius: 10px;
+  width: 55%;
+  height: 45%;
+  display: inline;
+  position: fixed;  
+  margin-top: 5%;
+  margin-left: 30px;
+}
+
+.pUserInfo
+{
+  padding-left: 10px;
+}
+
+.estatistica
+{
+  color: white;
+}
+
+.submitBtns
+{
+  background-color: #EB7131;
+  color: #FFFFFF;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  height: 30px;
+}
+
+.submitBtns:hover
+{
+  background-color: black;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 5px;
+  transition-duration: 1s;
+
+}
+
+.select
+{
+  background-color: #FFFFFF;
+  border: none;
+  border-radius: 5px;
+  height: 30px;
+}
+
+
+.lblsstoks
+{
+  color: white;
+}
+
+input[type="number"] {
+  background-color: #FFFFFF;
+  border: none;
+  border-radius: 5px;
+  height: 30px;
+}
+
+
+
